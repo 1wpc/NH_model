@@ -6,12 +6,13 @@ class ModmaDataset(Dataset):
     def __init__(self, path='./modma', flag='train'):
         self.path = path
         self.flag = flag
-        mat_datas = []
+        datas = []
         labels = []
         for root, dirs, files in os.walk(path):
             for file in files:
                 if file.endswith('.mat'):
-                    mat_datas.append(sio.loadmat(os.path.join(root, file)[file]))
+                    mat_data = sio.loadmat(os.path.join(root, file))
+                    datas.append(mat_data[list(mat_data.keys())[3]])#这个是ndarray类型的数据
                     if file.startswith('0201'):
                         labels.append(1)
                     else:
@@ -19,7 +20,8 @@ class ModmaDataset(Dataset):
 
 
 
-        self.data = []
+        self.data = datas
+
 
 
 
