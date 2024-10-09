@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 import scipy.io as sio
 import os
+import torch
 
 class ModmaDataset(Dataset):
     def __init__(self, path='./modma', flag='train'):
@@ -18,15 +19,14 @@ class ModmaDataset(Dataset):
                     else:
                         labels.append(0)
 
-
-
         self.data = datas
-
-
+        self.label = labels
 
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        x = torch.tensor(self.data[idx])
+        y = torch.tensor(self.label[idx])
+        return x, y
