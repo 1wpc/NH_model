@@ -7,7 +7,6 @@ from torcheeg.model_selection import KFoldGroupbyTrial
 from torch.utils.data import DataLoader
 from torcheeg.models import CCNN
 from net import Net
-from net2 import Net2
 from torcheeg.models import TSCeption
 from torcheeg.model_selection import train_test_split
 from torcheeg.trainers import ClassifierTrainer
