@@ -1,2 +1,6 @@
 data_preprocessed_python/
 modma/
+examples_vanilla_torch/
+examples_pipeline/
+deap/
+.torcheeg/

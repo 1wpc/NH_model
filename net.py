@@ -12,13 +12,14 @@ class Net(nn.Module):
         self.num_classes = num_classes
         self.dropout = dropout
 
-        self.conv1 = nn.Sequential(nn.Conv2d(self.in_channels, 64, kernel_size=3, stride=1, padding=1),
-
-                                   nn.SELU())
-        self.conv2 = nn.Sequential(nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1), nn.SELU())
-        self.conv3 = nn.Sequential(nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1), nn.SELU())
-        self.conv4 = nn.Sequential(nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1), nn.SELU())
-        self.conv5 = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1), nn.SELU())
+        self.conv1 = nn.Sequential(
+            nn.BatchNorm2d(self.in_channels),
+            nn.Conv2d(self.in_channels, 64, kernel_size=3, stride=1, padding=1),
+            nn.SELU())
+        self.conv2 = nn.Sequential(nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),nn.BatchNorm2d(128), nn.SELU())
+        self.conv3 = nn.Sequential(nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),nn.BatchNorm2d(128), nn.SELU())
+        self.conv4 = nn.Sequential(nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1),nn.BatchNorm2d(64), nn.SELU())
+        self.conv5 = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1), nn.BatchNorm2d(64),nn.SELU())
 
         self.lin1 = nn.Sequential(
             nn.Linear(self.grid_size[0] * self.grid_size[1] * 64, 1024),
@@ -49,7 +50,11 @@ class Net(nn.Module):
             nn.SELU()
 
         )
-        self.lin7 = nn.Linear(16, self.num_classes)
+        self.lin7 = nn.Sequential(
+            nn.Linear(16, self.num_classes),
+            # nn.Softmax(dim=1)
+
+        )
         
 
     def feature_dim(self):

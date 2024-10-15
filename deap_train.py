@@ -1,22 +1,37 @@
 import torch
-from dp_dataset import ModmaDataset
+from deep_dataset import DeapDataset
 from torch.utils.data import Dataset, DataLoader
 
 from net import Net
 
-train_dataset = ModmaDataset(path='./modma', flag='train')
-test_dataset = ModmaDataset(path='./modma', flag='test')
 
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False)
+train_dataset = DeapDataset(flag='train')
+test_dataset = DeapDataset(flag='test')
 
-model = Net(num_classes=2, in_channels=75000, grid_size=(4, 6))
+train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=20, shuffle=False)
+
+model = Net(num_classes=2, in_channels=8064, grid_size=(4, 6))
 lossfun = torch.nn.CrossEntropyLoss()
 opter = torch.optim.Adam(model.parameters(), lr=1e-4)
 epochs = 10
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
+
+def evaluate():
+    correct=0
+    total=0
+    with torch.no_grad():
+        for data in test_loader:
+            data,labels=data
+            data=data.to(device)
+            labels=labels.to(device)
+            outputs=model(data)
+            _,predict=torch.max(outputs.data,1)
+            total+=labels.size(0)
+            correct+=(predict==labels).sum().item()
+    return 100*correct/total
 
 for epoch in range(epochs):
     running_loss=0.0
@@ -35,20 +50,7 @@ for epoch in range(epochs):
         # if i % 10==0 and i!=0:
         #     print('[%d, %5d] loss: %.3f'%(epoch+1,i+1,running_loss/10))
         #     running_loss=0.0
-    print('finish')
-
-def evaluate():
-    correct=0
-    total=0
-    with torch.no_grad():
-        for data in test_loader:
-            data,labels=data
-            data=data.to(device)
-            labels=labels.to(device)
-            outputs=model(data)
-            _,predict=torch.max(outputs.data,1)
-            total+=labels.size(0)
-            correct+=(predict==labels).sum().item()
-    return 100*correct/total
+    evaluate()
+print('finish')
 
 print(evaluate())

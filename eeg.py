@@ -38,18 +38,22 @@ def valid(dataloader, model, loss_fn):
     model.to(device)
     model.eval()
     loss, correct = 0, 0
+    total = 0
     with torch.no_grad():
         for batch in dataloader:
             X = batch[0].to(device)
             y = batch[1].to(device)
 
-            pred = model(X)
-            loss += loss_fn(pred, y).item()
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+            y_ = model(X)
+            _,pred=torch.max(y_.data,1)
+            loss += loss_fn(y_, y).item()
+            # correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+            correct+=(pred==y).sum().item()
+            total += X.shape[0]
     loss /= num_batches
-    correct /= size
+    correct /= total
     logger.info(
-        f"Valid Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {loss:>8f} \n"
+        f"Accuracy: {(100*correct):>0.1f}%, Avg loss: {loss:>8f} \n"
     )
 
     return correct, loss
@@ -132,12 +136,14 @@ dataset = DEAPDataset(root_path='./data_preprocessed_python/data_preprocessed_py
 #                       io_path='.torcheeg/datasets_8channels_full_TSCeption')
 
 
-# k_fold = KFoldGroupbyTrial(split_path='./examples_pipeline/split_8c_tsception',
-#                            shuffle=True,
-#                            random_state=42,
-#                            n_splits=2)
+k_fold = KFoldGroupbyTrial(split_path='./examples_pipeline/split_8c_tsception',
+                           shuffle=True,
+                           random_state=42,
+                           n_splits=2)
 
-train_dataset, test_dataset = train_test_split(dataset, test_size=0.2, random_state=42,split_path='./examples_pipeline/split_8c_tt')
+train_dataset, test_dataset = next(k_fold.split(dataset))
+
+# train_dataset, test_dataset = train_test_split(dataset, test_size=0.2, random_state=42,split_path='./examples_pipeline/split_8c_tt')
 
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
