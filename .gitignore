@@ -4,3 +4,5 @@ examples_vanilla_torch/
 examples_pipeline/
 deap/
 .torcheeg/
+model/
+seed/

@@ -17,9 +17,13 @@ class ModmaDataset(Dataset):
                     mat_data = sio.loadmat(os.path.join(root, file))
                     datas.append(mat_data[list(mat_data.keys())[3]])#这个是ndarray类型的数据
                     if file.startswith('0201'):
-                        labels.append(1)
+                        for i in range(5):
+                            labels.append(1)
                     else:
-                        labels.append(0)
+                        for i in range(5):
+                            labels.append(0)
+
+        datas = self.choseEp(datas)
 
         train_data, test_data, train_label, test_label = train_test_split(datas, labels, test_size=0.2, random_state=42)
 
@@ -31,8 +35,6 @@ class ModmaDataset(Dataset):
             self.label = test_label
         else:
             raise ValueError("Invalid flag. Please use 'train' or 'test'.")
-        
-        self.data = self.choseEp(self.data)
 
 
 
@@ -45,42 +47,43 @@ class ModmaDataset(Dataset):
         return x, y
     
     def choseEp(self,data:list):
-        data_new = []
-        for index in range(len(data)):
-            data_one = []
-            data_one.append(data[index][21])  # fp1
-            data_one.append(data[index][8])  # fp2
-            data_one.append(data[index][35])  # c3
-            data_one.append(data[index][103])  # c4
-            data_one.append(data[index][69])  # o1
-            data_one.append(data[index][82])  # o2
-            data_one.append(data[index][57])  # p7
-            data_one.append(data[index][95])  # p8
+        data_new = [] #batchsize*4*6*15000
+        for batch in range(len(data)):
+            data_one = [] #8*75000
+            data_one.append(data[batch][21])  # fp1
+            data_one.append(data[batch][8])  # fp2
+            data_one.append(data[batch][35])  # c3
+            data_one.append(data[batch][103])  # c4
+            data_one.append(data[batch][69])  # o1
+            data_one.append(data[batch][82])  # o2
+            data_one.append(data[batch][57])  # p7
+            data_one.append(data[batch][95])  # p8
 
-            data_one2d = []
-            for i in range(75000):
-                p8 = []
-                for j in range(8):
-                    p8.append(data_one[j][i])
-                image = []
-                hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                hang[2] = p8[0]
-                hang[3] = p8[1]
-                image.append(copy.deepcopy(hang))
-                hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                hang[1] = p8[2]
-                hang[4] = p8[3]
-                image.append(copy.deepcopy(hang))
-                hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                hang[0] = p8[6]
-                hang[5] = p8[7]
-                image.append(copy.deepcopy(hang))
-                hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                hang[2] = p8[4]
-                hang[3] = p8[5]
-                image.append(copy.deepcopy(hang))
-                data_one2d.append(image)
+            for times in range(5):
+                data2d = [] #4*6*15000
+                for i in range(15000*times, 15000*(times+1)):
+                    p8 = []
+                    for j in range(8):
+                        p8.append(data_one[j][i])
+                    image = []
+                    hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                    hang[2] = p8[0]
+                    hang[3] = p8[1]
+                    image.append(copy.deepcopy(hang))
+                    hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                    hang[1] = p8[2]
+                    hang[4] = p8[3]
+                    image.append(copy.deepcopy(hang))
+                    hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                    hang[0] = p8[6]
+                    hang[5] = p8[7]
+                    image.append(copy.deepcopy(hang))
+                    hang = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                    hang[2] = p8[4]
+                    hang[3] = p8[5]
+                    image.append(copy.deepcopy(hang))
+                    data2d.append(image)
+                data_new.append(data2d)
 
-            data_new.append(data_one2d)
 
         return data_new

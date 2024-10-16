@@ -50,11 +50,17 @@ class Net(nn.Module):
             nn.SELU()
 
         )
-        self.lin7 = nn.Sequential(
-            nn.Linear(16, self.num_classes),
-            # nn.Softmax(dim=1)
+        if num_classes == 1:
+            self.lin7 = nn.Sequential(
+                nn.Linear(16, self.num_classes),
+                nn.Sigmoid()
+            )
+        else:
+            self.lin7 = nn.Sequential(
+                nn.Linear(16, self.num_classes),
+                # nn.Softmax(dim=1)
 
-        )
+            )
         
 
     def feature_dim(self):
